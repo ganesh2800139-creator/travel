@@ -1,20 +1,27 @@
-# travel.py
+# travel_app.py
 
+import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from scipy.sparse import hstack
 
+st.set_page_config(page_title="Travel Package Recommendation", layout="wide")
+st.title("🌍 Travel Package Recommendation App")
+
 # ---------------------------------------------------------
 # 1️⃣ Load and Prepare Data
 # ---------------------------------------------------------
-print("Loading travel data...")
-df = pd.read_csv("travel_packages_120000.csv")   # ✅ updated filename
-df.rename(columns={'Approx_Cost (₹)': 'Approx_Cost'}, inplace=True)
-print(f"✅ Data loaded successfully! Shape: {df.shape}")
+@st.cache_data
+def load_data():
+    df = pd.read_csv("travel_packages_120000.csv")
+    df.rename(columns={'Approx_Cost (₹)': 'Approx_Cost'}, inplace=True)
+    return df
 
-# Identify categorical and numerical columns
+df = load_data()
+st.success(f"✅ Data loaded successfully! Shape: {df.shape}")
+
 cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range', 
             'Accommodation_Type', 'Transport_Mode', 'Meal_Plan', 
             'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']
@@ -24,107 +31,65 @@ num_cols = ['Trip_Duration_Days', 'Approx_Cost', 'Activity_Count']
 # ---------------------------------------------------------
 # 2️⃣ Preprocessing (Encoding + Scaling)
 # ---------------------------------------------------------
-print("Preprocessing data...")
+@st.cache_resource
+def preprocess_data(df):
+    ohe = OneHotEncoder(handle_unknown='ignore')
+    scaler = StandardScaler()
 
-ohe = OneHotEncoder(handle_unknown='ignore')
-scaler = StandardScaler()
+    encoded_cats = ohe.fit_transform(df[cat_cols])
+    scaled_nums = scaler.fit_transform(df[num_cols])
+    cdata = hstack([scaled_nums, encoded_cats])
 
-encoded_cats = ohe.fit_transform(df[cat_cols])
-scaled_nums = scaler.fit_transform(df[num_cols])
+    cosinemodel = NearestNeighbors(n_neighbors=5, metric='cosine')
+    cosinemodel.fit(cdata)
 
-cdata = hstack([scaled_nums, encoded_cats])
+    return ohe, scaler, cosinemodel, cdata
 
-print(f"✅ Preprocessing complete! Final feature shape: {cdata.shape}")
-
-# ---------------------------------------------------------
-# 3️⃣ Fit NearestNeighbors Model
-# ---------------------------------------------------------
-print("Training cosine similarity model...")
-cosinemodel = NearestNeighbors(n_neighbors=5, metric='cosine')
-cosinemodel.fit(cdata)
-print("✅ Model trained successfully!")
+ohe, scaler, cosinemodel, cdata = preprocess_data(df)
+st.success("✅ Model trained successfully!")
 
 # ---------------------------------------------------------
-# 4️⃣ Function: User Input
+# 3️⃣ User Input Section
 # ---------------------------------------------------------
-def user_input():
-    """Collect user travel preferences from console input."""
-    inpdata = pd.read_csv("travel_packages_120000.csv")  # ✅ updated filename
+st.header("✈️ Enter Your Travel Preferences")
 
-    print("\nAvailable From Cities:", inpdata['From_City'].unique())
-    From_City = input("Select your From_City: ")
+user_data = {}
 
-    print("\nAvailable Destinations:", inpdata['Destination'].unique())
-    Destination = input("Select your Destination: ")
+# Categorical Inputs
+for col in cat_cols:
+    user_data[col] = st.selectbox(f"Select {col}", df[col].unique())
 
-    print("\nDestination Types:", inpdata['Destination_Type'].unique())
-    Destination_Type = input("Select your Destination_Type: ")
+# Numeric Inputs
+for col in num_cols:
+    user_data[col] = st.number_input(
+        f"Enter {col} (Range: {df[col].min()} - {df[col].max()})",
+        min_value=float(df[col].min()),
+        max_value=float(df[col].max()),
+        value=float(df[col].mean())
+    )
 
-    Trip_Duration_Days = int(input(f"\nEnter Trip_Duration_Days (Range: {inpdata['Trip_Duration_Days'].min()} - {inpdata['Trip_Duration_Days'].max()}): "))
-
-    print("\nBudget Ranges:", inpdata['Budget_Range'].unique())
-    Budget_Range = input("Select your Budget_Range: ")
-
-    Approx_Cost = float(input(f"\nEnter Approx_Cost (Range: {inpdata['Approx_Cost'].min()} - {inpdata['Approx_Cost'].max()}): "))
-
-    print("\nAccommodation Types:", inpdata['Accommodation_Type'].unique())
-    Accommodation_Type = input("Select your Accommodation_Type: ")
-
-    print("\nTransport Modes:", inpdata['Transport_Mode'].unique())
-    Transport_Mode = input("Select your Transport_Mode: ")
-
-    print("\nMeal Plans:", inpdata['Meal_Plan'].unique())
-    Meal_Plan = input("Select your Meal_Plan: ")
-
-    Activity_Count = int(input(f"\nEnter Activity_Count (Range: {inpdata['Activity_Count'].min()} - {inpdata['Activity_Count'].max()}): "))
-
-    print("\nActivity Types:", inpdata['Activity_Types'].unique())
-    Activity_Types = input("Select Activity_Types: ")
-
-    print("\nSeasons:", inpdata['Season'].unique())
-    Season = input("Select Season: ")
-
-    print("\nPackage Types:", inpdata['Package_Type'].unique())
-    Package_Type = input("Select Package_Type: ")
-
-    print("\nRecommended For:", inpdata['Recommended_For'].unique())
-    Recommended_For = input("Select Recommended_For: ")
-
-    # Create dataframe for user input
-    row = pd.DataFrame([[From_City, Destination, Destination_Type, Trip_Duration_Days, Budget_Range,
-                         Approx_Cost, Accommodation_Type, Transport_Mode, Meal_Plan, Activity_Count,
-                         Activity_Types, Season, Package_Type, Recommended_For]],
-                       columns=inpdata.columns)
-
-    print("\nGiven Item Input Data:")
-    print(row.to_string(index=False))
-    print()
-
-    return row
+user_df = pd.DataFrame([user_data])
+st.subheader("Your Input:")
+st.dataframe(user_df)
 
 # ---------------------------------------------------------
-# 5️⃣ Get User Input and Find Recommendations
+# 4️⃣ Recommendations
 # ---------------------------------------------------------
-if __name__ == "__main__":
-    user_df = user_input()
-
-    # Transform categorical input
+if st.button("🔍 Recommend Packages"):
+    # Transform input
     user_cat = ohe.transform(user_df[cat_cols])
     user_num = scaler.transform(user_df[num_cols])
     user_vector = np.hstack([user_num, user_cat.toarray()])
 
     # Find nearest neighbors
     distances, indices = cosinemodel.kneighbors(user_vector)
-
-    # Get top recommended packages
     top_packages = df.iloc[indices[0]].copy()
     top_packages['Similarity_Score'] = 1 - distances.flatten()
 
-    # Display recommendations
+    # Display top recommendations
     top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type',
                                          'Trip_Duration_Days', 'Budget_Range', 'Approx_Cost',
                                          'Accommodation_Type', 'Transport_Mode', 'Activity_Count',
                                          'Package_Type', 'Similarity_Score']]
-
-    print("\n🎯 Top Recommended Travel Packages:\n")
-    print(top_packages_display.to_string(index=False))
+    st.subheader("🎯 Top Recommended Packages")
+    st.dataframe(top_packages_display)
