@@ -21,7 +21,7 @@ cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range',
             'Accommodation_Type', 'Transport_Mode', 'Meal_Plan', 'Activity_Types',
             'Season', 'Package_Type', 'Recommended_For']
 
-num_cols = ['Trip_Duration_Days', 'Approx_Cost', 'Activity_Count']
+num_cols = ['Trip_Duration_Days', 'Approx_Cost (₹)', 'Activity_Count']
 
 # ================================================
 # ✨ One-Hot Encode Categorical Features
@@ -78,7 +78,7 @@ def user_input():
     print()
 
     # Approx Cost
-    Approx_Cost = float(input(f"Enter your Approx_Cost (Range: {df['Approx_Cost'].min()} to {df['Approx_Cost'].max()}): "))
+    Approx_Cost = float(input(f"Enter your Approx_Cost (Range: {df['Approx_Cost (₹)'].min()} to {df['Approx_Cost (₹)'].max()}): "))
     print()
 
     # Accommodation Type
@@ -122,7 +122,7 @@ def user_input():
 
     # Build DataFrame for User Input
     row = pd.DataFrame([[From_City, Destination, Destination_Type, Trip_Duration_Days, Budget_Range,
-                         Approx_Cost, Accommodation_Type, Transport_Mode, Meal_Plan, Activity_Count,
+                         Approx_Cost (₹), Accommodation_Type, Transport_Mode, Meal_Plan, Activity_Count,
                          Activity_Types, Season, Package_Type, Recommended_For]],
                        columns=df.columns)
 
@@ -156,11 +156,12 @@ top_packages = df.iloc[indices[0]].copy()
 top_packages['Similarity_Score'] = 1 - distances.flatten()
 
 top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type', 'Trip_Duration_Days',
-                                     'Budget_Range', 'Approx_Cost', 'Accommodation_Type', 'Transport_Mode',
+                                     'Budget_Range', 'Approx_Cost (₹)', 'Accommodation_Type', 'Transport_Mode',
                                      'Activity_Count', 'Package_Type', 'Similarity_Score']]
 
 print("🏖️ Top Recommended Travel Packages 🏖️\n")
 print(top_packages_display.to_string(index=False))
+
 
 
 
