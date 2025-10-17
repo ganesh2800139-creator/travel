@@ -15,7 +15,7 @@ from scipy.sparse import hstack
 # 🪄 Load Dataset
 # ================================================
 df = pd.read_csv("travel_packages_120000.csv")
-data.rename(columns={'Approx_Cost (₹)': 'Approx_Cost'}, inplace=True)
+df.rename(columns={'Approx_Cost (₹)': 'Approx_Cost'}, inplace=True)
 # Define Categorical and Numerical Columns
 cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range',
             'Accommodation_Type', 'Transport_Mode', 'Meal_Plan', 'Activity_Types',
@@ -161,6 +161,7 @@ top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Ty
 
 print("🏖️ Top Recommended Travel Packages 🏖️\n")
 print(top_packages_display.to_string(index=False))
+
 
 
 
