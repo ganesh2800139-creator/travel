@@ -10,7 +10,7 @@ from scipy.sparse import hstack
 # 1️⃣ Load and Prepare Data
 # ---------------------------------------------------------
 print("Loading travel data...")
-df = pd.read_csv("travel_packages_120000.csv")
+df = pd.read_csv("travel_packages_120000.csv")   # ✅ updated filename
 print(f"✅ Data loaded successfully! Shape: {df.shape}")
 df.rename(columns={'Approx_Cost (₹)': 'Approx_Cost'}, inplace=True)
 
@@ -49,7 +49,7 @@ print("✅ Model trained successfully!")
 # ---------------------------------------------------------
 def user_input():
     """Collect user travel preferences from console input."""
-    inpdata = pd.read_csv("finaltraveldata.csv")
+    inpdata = pd.read_csv("travel_packages_120000.csv")  # ✅ updated filename
 
     print("\nAvailable From Cities:", inpdata['From_City'].unique())
     From_City = input("Select your From_City: ")
@@ -128,5 +128,3 @@ if __name__ == "__main__":
 
     print("\n🎯 Top Recommended Travel Packages:\n")
     print(top_packages_display.to_string(index=False))
-
-
