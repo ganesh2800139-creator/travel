@@ -42,9 +42,6 @@ scaler = MinMaxScaler()
 num_features = scaler.fit_transform(df[num_cols])
 
 cdata = hstack([csr_matrix(num_features), cat_features])
-user_cat = ohe.transform(user_df[cat_cols])
-user_num = scaler.transform(user_df[num_cols])
-user_vector = hstack([csr_matrix(user_num), user_cat])
 
 # ================================================
 # 🧠 Fit Nearest Neighbors Model
@@ -132,5 +129,6 @@ if submit_button:
         file_name="recommended_packages.csv",
         mime="text/csv"
     )
+
 
 
