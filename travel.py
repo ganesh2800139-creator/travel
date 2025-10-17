@@ -16,7 +16,7 @@ from sklearn.neighbors import NearestNeighbors
 # ================================================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("C://Users//ganes//OneDrive//Documents//travel_packages_120000.csv")   # Ensure this CSV is in the same folder
+    df = pd.read_csv("travel_packages_120000.csv")   # Ensure this CSV is in the same folder
     return df
 
 df = load_data()
@@ -128,3 +128,4 @@ if submit_button:
         file_name="recommended_packages.csv",
         mime="text/csv"
     )
+
