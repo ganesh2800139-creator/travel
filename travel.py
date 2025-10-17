@@ -10,6 +10,7 @@ warnings.filterwarnings("ignore")
 
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.neighbors import NearestNeighbors
+from scipy.sparse import hstack, csr_matrix
 
 # ================================================
 # 🪄 Load Dataset
@@ -40,7 +41,10 @@ cat_features = ohe.fit_transform(df[cat_cols])
 scaler = MinMaxScaler()
 num_features = scaler.fit_transform(df[num_cols])
 
-cdata = np.hstack([num_features, cat_features])
+cdata = hstack([csr_matrix(num_features), cat_features])
+user_cat = ohe.transform(user_df[cat_cols])
+user_num = scaler.transform(user_df[num_cols])
+user_vector = hstack([csr_matrix(user_num), user_cat])
 
 # ================================================
 # 🧠 Fit Nearest Neighbors Model
@@ -128,4 +132,5 @@ if submit_button:
         file_name="recommended_packages.csv",
         mime="text/csv"
     )
+
 
