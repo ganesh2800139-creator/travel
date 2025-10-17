@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from IPython.display import display
+from scipy.sparse import hstack
 
 # ---------------------------------------------------------
 # 1️⃣ Load and Prepare Data
@@ -29,12 +29,9 @@ print("Preprocessing data...")
 ohe = OneHotEncoder(handle_unknown='ignore')
 scaler = StandardScaler()
 
-# Fit transformers
 encoded_cats = ohe.fit_transform(df[cat_cols])
 scaled_nums = scaler.fit_transform(df[num_cols])
 
-# Combine encoded + scaled data
-from scipy.sparse import hstack
 cdata = hstack([scaled_nums, encoded_cats])
 
 print(f"✅ Preprocessing complete! Final feature shape: {cdata.shape}")
@@ -100,7 +97,7 @@ def user_input():
                        columns=inpdata.columns)
 
     print("\nGiven Item Input Data:")
-    display(row)
+    print(row.to_string(index=False))
     print()
 
     return row
@@ -113,19 +110,15 @@ if __name__ == "__main__":
 
     # Transform categorical input
     user_cat = ohe.transform(user_df[cat_cols])
-
-    # Scale numeric input
     user_num = scaler.transform(user_df[num_cols])
-
-    # Combine user features
     user_vector = np.hstack([user_num, user_cat.toarray()])
 
-    # Find Nearest Neighbors
+    # Find nearest neighbors
     distances, indices = cosinemodel.kneighbors(user_vector)
 
     # Get top recommended packages
     top_packages = df.iloc[indices[0]].copy()
-    top_packages['Similarity_Score'] = 1 - distances.flatten()  # Convert distance → similarity
+    top_packages['Similarity_Score'] = 1 - distances.flatten()
 
     # Display recommendations
     top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type',
@@ -134,4 +127,6 @@ if __name__ == "__main__":
                                          'Package_Type', 'Similarity_Score']]
 
     print("\n🎯 Top Recommended Travel Packages:\n")
-    print(top_packages_display)
+    print(top_packages_display.to_string(index=False))
+
+
