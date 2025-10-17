@@ -17,7 +17,8 @@ from scipy.sparse import hstack, csr_matrix
 # ================================================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("travel_packages_120000.csv")   # Ensure this CSV is in the same folder
+    # Make sure this CSV is in the same folder as this file
+    df = pd.read_csv("travel_packages_120000.csv")
     return df
 
 df = load_data()
@@ -25,10 +26,12 @@ df = load_data()
 # ================================================
 # 🧰 Define Columns
 # ================================================
-cat_cols = ['From_City', 'Destination', 'Destination_Type', 
-            'Budget_Range', 'Accommodation_Type', 'Transport_Mode', 
-            'Meal_Plan', 'Activity_Types', 'Season', 
-            'Package_Type', 'Recommended_For']
+cat_cols = [
+    'From_City', 'Destination', 'Destination_Type', 
+    'Budget_Range', 'Accommodation_Type', 'Transport_Mode', 
+    'Meal_Plan', 'Activity_Types', 'Season', 
+    'Package_Type', 'Recommended_For'
+]
 
 num_cols = ['Trip_Duration_Days', 'Approx_Cost (₹)', 'Activity_Count']
 
@@ -41,6 +44,7 @@ cat_features = ohe.fit_transform(df[cat_cols])
 scaler = MinMaxScaler()
 num_features = scaler.fit_transform(df[num_cols])
 
+# Convert numeric features to sparse before stacking
 cdata = hstack([csr_matrix(num_features), cat_features])
 
 # ================================================
@@ -106,7 +110,9 @@ if submit_button:
     # Encode and scale user input
     user_cat = ohe.transform(user_df[cat_cols])
     user_num = scaler.transform(user_df[num_cols])
-    user_vector = np.hstack([user_num, user_cat])
+
+    # ✅ FIX: convert numeric to sparse and stack
+    user_vector = hstack([csr_matrix(user_num), user_cat])
 
     # Get recommendations
     distances, indices = cosinemodel.kneighbors(user_vector)
@@ -129,6 +135,4 @@ if submit_button:
         file_name="recommended_packages.csv",
         mime="text/csv"
     )
-
-
 
