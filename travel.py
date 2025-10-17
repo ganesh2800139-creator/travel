@@ -1,8 +1,7 @@
 # ================================================
-# 🧭 Travel Package Recommendation System (Streamlit)
+# 🧭 Travel Package Recommendation System
 # ================================================
 
-import streamlit as st
 import pandas as pd
 import numpy as np
 import warnings
@@ -10,129 +9,157 @@ warnings.filterwarnings("ignore")
 
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.neighbors import NearestNeighbors
-from scipy.sparse import hstack, csr_matrix
+from scipy.sparse import hstack
 
 # ================================================
 # 🪄 Load Dataset
 # ================================================
-@st.cache_data
-def load_data():
-    # Make sure this CSV is in the same folder as this file
-    df = pd.read_csv("travel_packages_120000.csv")
-    return df
+df = pd.read_csv("finaltraveldata.csv")
 
-df = load_data()
+# Define Categorical and Numerical Columns
+cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range',
+            'Accommodation_Type', 'Transport_Mode', 'Meal_Plan', 'Activity_Types',
+            'Season', 'Package_Type', 'Recommended_For']
 
-# ================================================
-# 🧰 Define Columns
-# ================================================
-cat_cols = [
-    'From_City', 'Destination', 'Destination_Type', 
-    'Budget_Range', 'Accommodation_Type', 'Transport_Mode', 
-    'Meal_Plan', 'Activity_Types', 'Season', 
-    'Package_Type', 'Recommended_For'
-]
-
-num_cols = ['Trip_Duration_Days', 'Approx_Cost (₹)', 'Activity_Count']
+num_cols = ['Trip_Duration_Days', 'Approx_Cost', 'Activity_Count']
 
 # ================================================
-# 🧼 Preprocessing
+# ✨ One-Hot Encode Categorical Features
 # ================================================
-ohe = OneHotEncoder(handle_unknown='ignore', sparse_output=True)
+ohe = OneHotEncoder(handle_unknown='ignore')
 cat_features = ohe.fit_transform(df[cat_cols])
 
+# ================================================
+# 📏 Scale Numerical Features
+# ================================================
 scaler = MinMaxScaler()
 num_features = scaler.fit_transform(df[num_cols])
 
-# Convert numeric features to sparse before stacking
-cdata = hstack([csr_matrix(num_features), cat_features])
+# ================================================
+# 🧮 Combine Encoded + Scaled Features
+# ================================================
+cdata = hstack([num_features, cat_features]).tocsr()
 
 # ================================================
-# 🧠 Fit Nearest Neighbors Model
+# 🤝 Fit Nearest Neighbors Model
 # ================================================
 cosinemodel = NearestNeighbors(n_neighbors=5, metric='cosine')
 cosinemodel.fit(cdata)
 
 # ================================================
-# 🧑 Streamlit UI
+# 🧑 User Input Function
 # ================================================
-st.set_page_config(page_title="Travel Package Recommender", page_icon="✈️", layout="wide")
-st.title("✈️ Travel Package Recommendation System")
-st.write("Get personalized travel package recommendations based on your preferences.")
+def user_input():
+    print("🧭 --- Travel Package Selection --- 🧭")
+    print()
 
-# --- User Inputs ---
-with st.form("user_input_form"):
-    col1, col2 = st.columns(2)
-    with col1:
-        from_city = st.selectbox("From City", sorted(df['From_City'].unique()))
-        destination = st.selectbox("Destination", sorted(df['Destination'].unique()))
-        destination_type = st.selectbox("Destination Type", sorted(df['Destination_Type'].unique()))
-        budget_range = st.selectbox("Budget Range", sorted(df['Budget_Range'].unique()))
-        accommodation = st.selectbox("Accommodation Type", sorted(df['Accommodation_Type'].unique()))
-        transport = st.selectbox("Transport Mode", sorted(df['Transport_Mode'].unique()))
+    # From City
+    print(df['From_City'].unique())
+    From_City = input("Select your From_City: ")
+    print()
 
-    with col2:
-        meal_plan = st.selectbox("Meal Plan", sorted(df['Meal_Plan'].unique()))
-        activity_types = st.selectbox("Activity Types", sorted(df['Activity_Types'].unique()))
-        season = st.selectbox("Season", sorted(df['Season'].unique()))
-        package_type = st.selectbox("Package Type", sorted(df['Package_Type'].unique()))
-        recommended_for = st.selectbox("Recommended For", sorted(df['Recommended_For'].unique()))
-        trip_duration = st.number_input("Trip Duration (Days)", min_value=1, value=5)
-        approx_cost = st.number_input("Approx Cost (₹)", min_value=0, value=30000, step=1000)
-        activity_count = st.number_input("Activity Count", min_value=1, value=3)
+    # Destination
+    print(df['Destination'].unique())
+    Destination = input("Select your Destination: ")
+    print()
 
-    submit_button = st.form_submit_button("🚀 Get Recommendations")
+    # Destination Type
+    print(df['Destination_Type'].unique())
+    Destination_Type = input("Select your Destination_Type: ")
+    print()
+
+    # Trip Duration
+    Trip_Duration_Days = int(input(f"Enter Trip_Duration_Days (Range: {df['Trip_Duration_Days'].min()} to {df['Trip_Duration_Days'].max()}): "))
+    print()
+
+    # Budget Range
+    print(df['Budget_Range'].unique())
+    Budget_Range = input("Select your Budget_Range: ")
+    print()
+
+    # Approx Cost
+    Approx_Cost = float(input(f"Enter your Approx_Cost (Range: {df['Approx_Cost'].min()} to {df['Approx_Cost'].max()}): "))
+    print()
+
+    # Accommodation Type
+    print(df['Accommodation_Type'].unique())
+    Accommodation_Type = input("Select your Accommodation_Type: ")
+    print()
+
+    # Transport Mode
+    print(df['Transport_Mode'].unique())
+    Transport_Mode = input("Select your Transport_Mode: ")
+    print()
+
+    # Meal Plan
+    print(df['Meal_Plan'].unique())
+    Meal_Plan = input("Select your Meal_Plan: ")
+    print()
+
+    # Activity Count
+    Activity_Count = int(input(f"Enter your Activity_Count (Range: {df['Activity_Count'].min()} to {df['Activity_Count'].max()}): "))
+    print()
+
+    # Activity Types
+    print(df['Activity_Types'].unique())
+    Activity_Types = input("Select Activity_Types: ")
+    print()
+
+    # Season
+    print(df['Season'].unique())
+    Season = input("Select Season: ")
+    print()
+
+    # Package Type
+    print(df['Package_Type'].unique())
+    Package_Type = input("Select Package_Type: ")
+    print()
+
+    # Recommended For
+    print(df['Recommended_For'].unique())
+    Recommended_For = input("Select Recommended_For: ")
+    print()
+
+    # Build DataFrame for User Input
+    row = pd.DataFrame([[From_City, Destination, Destination_Type, Trip_Duration_Days, Budget_Range,
+                         Approx_Cost, Accommodation_Type, Transport_Mode, Meal_Plan, Activity_Count,
+                         Activity_Types, Season, Package_Type, Recommended_For]],
+                       columns=df.columns)
+
+    print("✅ Given Input Data:")
+    print(row)
+    print()
+
+    return row
 
 # ================================================
-# 🔍 Recommendation Logic
+# 🧭 Get User Input
 # ================================================
-if submit_button:
-    # Build user input dictionary
-    user_input = {
-        'From_City': from_city,
-        'Destination': destination,
-        'Destination_Type': destination_type,
-        'Budget_Range': budget_range,
-        'Accommodation_Type': accommodation,
-        'Transport_Mode': transport,
-        'Meal_Plan': meal_plan,
-        'Activity_Types': activity_types,
-        'Season': season,
-        'Package_Type': package_type,
-        'Recommended_For': recommended_for,
-        'Trip_Duration_Days': trip_duration,
-        'Approx_Cost (₹)': approx_cost,
-        'Activity_Count': activity_count
-    }
+user_df = user_input()
 
-    user_df = pd.DataFrame([user_input])
+# ================================================
+# 🧠 Transform User Input (Encoding + Scaling)
+# ================================================
+user_cat = ohe.transform(user_df[cat_cols])
+user_num = scaler.transform(user_df[num_cols])
+user_vector = hstack([user_num, user_cat]).tocsr()
 
-    # Encode and scale user input
-    user_cat = ohe.transform(user_df[cat_cols])
-    user_num = scaler.transform(user_df[num_cols])
+# ================================================
+# 🕵️‍♂️ Find Nearest Packages
+# ================================================
+distances, indices = cosinemodel.kneighbors(user_vector)
 
-    # ✅ FIX: convert numeric to sparse and stack
-    user_vector = hstack([csr_matrix(user_num), user_cat])
+# ================================================
+# 🏆 Top Recommendations
+# ================================================
+top_packages = df.iloc[indices[0]].copy()
+top_packages['Similarity_Score'] = 1 - distances.flatten()
 
-    # Get recommendations
-    distances, indices = cosinemodel.kneighbors(user_vector)
-    top_packages = df.iloc[indices[0]].copy()
-    top_packages['Similarity_Score'] = 1 - distances.flatten()
+top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type', 'Trip_Duration_Days',
+                                     'Budget_Range', 'Approx_Cost', 'Accommodation_Type', 'Transport_Mode',
+                                     'Activity_Count', 'Package_Type', 'Similarity_Score']]
 
-    # Display top recommendations
-    st.subheader("🎯 Top Recommended Packages")
-    st.dataframe(
-        top_packages[['Package_ID', 'Destination', 'Trip_Duration_Days', 
-                      'Approx_Cost (₹)', 'Accommodation_Type', 
-                      'Package_Type', 'Similarity_Score']].reset_index(drop=True)
-    )
+print("🏖️ Top Recommended Travel Packages 🏖️\n")
+print(top_packages_display.to_string(index=False))
 
-    # Optional: download option
-    csv = top_packages.to_csv(index=False)
-    st.download_button(
-        label="⬇️ Download Recommendations as CSV",
-        data=csv,
-        file_name="recommended_packages.csv",
-        mime="text/csv"
-    )
 
