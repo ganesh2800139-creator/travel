@@ -74,8 +74,9 @@ else:
     def recommend_similar_trips(from_city, destination, budget_range, accommodation_type,
                                 transport_mode, meal_plan, activity_types, season,
                                 package_type, recommended_for, trip_duration_days,
-                                Approx_Cost (₹), activity_count):
+                                approx_cost, activity_count):
 
+        # Map Python variable approx_cost to CSV column name
         input_df = pd.DataFrame([{
             'From_City': from_city,
             'Destination': destination,
@@ -88,7 +89,7 @@ else:
             'Package_Type': package_type,
             'Recommended_For': recommended_for,
             'Trip_Duration_Days': trip_duration_days,
-            'Approx_Cost (₹)': Approx_Cost (₹),
+            'Approx_Cost (₹)': approx_cost,
             'Activity_Count': activity_count
         }])
 
@@ -123,11 +124,10 @@ else:
         package_type='Leisure',
         recommended_for='Couples',
         trip_duration_days=5,
-        Approx_Cost (₹)=40000,
+        approx_cost=40000,   # Python variable
         activity_count=6
     )
 
     print("🔹 Recommended Similar Trips:")
     print(sample_result)
-
 
