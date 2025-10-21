@@ -19,8 +19,16 @@ cat_cols = ['From_City', 'Destination', 'Budget_Range',
 
 num_cols = ['Trip_Duration_Days', 'Approx_Cost', 'Activity_Count']
 
-# Drop missing values
-df = df.dropna(subset=cat_cols + num_cols + ['Destination_Type']).reset_index(drop=True)
+# -------------------------------
+# 1️⃣a Ensure columns exist before dropping NaN
+# -------------------------------
+existing_cols = [col for col in cat_cols + num_cols + ['Destination_Type'] if col in df.columns]
+missing_cols = list(set(cat_cols + num_cols + ['Destination_Type']) - set(existing_cols))
+if missing_cols:
+    print(f"⚠️ Warning: Missing columns in CSV and will be ignored: {missing_cols}")
+
+# Drop missing values only for existing columns
+df = df.dropna(subset=existing_cols).reset_index(drop=True)
 
 # -------------------------------
 # 2️⃣ Encode Features
@@ -28,8 +36,8 @@ df = df.dropna(subset=cat_cols + num_cols + ['Destination_Type']).reset_index(dr
 encoder = OneHotEncoder(handle_unknown='ignore')
 scaler = StandardScaler()
 
-X_cat = encoder.fit_transform(df[cat_cols])
-X_num = scaler.fit_transform(df[num_cols])
+X_cat = encoder.fit_transform(df[[col for col in cat_cols if col in df.columns]])
+X_num = scaler.fit_transform(df[[col for col in num_cols if col in df.columns]])
 
 # Combine categorical + numerical
 X_final = hstack([X_cat, X_num])
@@ -65,9 +73,13 @@ def recommend_similar_trips(from_city, destination, budget_range, accommodation_
         'Activity_Count': activity_count
     }])
     
+    # Keep only columns that exist in df
+    input_cat_cols = [col for col in cat_cols if col in df.columns]
+    input_num_cols = [col for col in num_cols if col in df.columns]
+    
     # Transform input
-    input_cat = encoder.transform(input_df[cat_cols])
-    input_num = scaler.transform(input_df[num_cols])
+    input_cat = encoder.transform(input_df[input_cat_cols])
+    input_num = scaler.transform(input_df[input_num_cols])
     input_final = hstack([input_cat, input_num])
     
     # Find nearest neighbors
@@ -77,7 +89,11 @@ def recommend_similar_trips(from_city, destination, budget_range, accommodation_
     similar = df.iloc[indices[0]].copy()
     similar['Similarity'] = 1 - distances[0]
     
-    return similar[['From_City', 'Destination', 'Destination_Type', 'Approx_Cost', 'Similarity']]
+    # Return key columns if they exist
+    output_cols = ['From_City', 'Destination', 'Destination_Type', 'Approx_Cost', 'Similarity']
+    output_cols = [col for col in output_cols if col in similar.columns]
+    
+    return similar[output_cols]
 
 # -------------------------------
 # 5️⃣ Example Usage
@@ -100,5 +116,3 @@ sample_result = recommend_similar_trips(
 
 print("🔹 Recommended Similar Trips:")
 print(sample_result)
-
-
