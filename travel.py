@@ -1,69 +1,96 @@
-# app.py
+# travel_app.py
 
 import streamlit as st
 import pandas as pd
-import pickle
+import numpy as np
 from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from scipy.sparse import hstack
 
-# Load artifacts
-with open("artifacts/preprocessor.pkl", "rb") as f:
-    preprocessor = pickle.load(f)
-with open("artifacts/nn_model.pkl", "rb") as f:
-    model = pickle.load(f)
+st.set_page_config(page_title="Travel Package Recommendation", layout="wide")
+st.title("🌍 Travel Package Recommendation App")
 
-# Load data
-df = pd.read_csv("travel_packages_120000.csv")
+# ---------------------------------------------------------
+# 1️⃣ Load and Prepare Data
+# ---------------------------------------------------------
+@st.cache_data
+def load_data():
+    df = pd.read_csv("travel_packages_120000.csv")
+    df.rename(columns={'Approx_Cost (₹)': 'Approx_Cost'}, inplace=True)
+    return df
 
-# ID handling
-id_col = 'Package_ID'
-feature_cols = ['Activity_Count', 'Approx_Cost (₹)', 'Trip_Duration_Days',
-                'Accommodation_Type', 'Activity_Types', 'Budget_Range',
-                'Destination_Type', 'Meal_Plan', 'Package_Type',
-                'Recommended_For', 'Season', 'Transport_Mode']
+df = load_data()
+st.success(f"✅ Data loaded successfully! Shape: {df.shape}")
 
-# Mappings
-id_to_index = pd.Series(df.index.values, index=df[id_col]).to_dict()
-index_to_id = pd.Series(df[id_col].values, index=df.index).to_dict()
+cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range', 
+            'Accommodation_Type', 'Transport_Mode', 'Meal_Plan', 
+            'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']
 
-# UI
-st.title("🌍 Travel Package Recommendation System")
+num_cols = ['Trip_Duration_Days', 'Approx_Cost', 'Activity_Count']
 
-st.sidebar.header("🔍 Filter Your Preferences")
+# ---------------------------------------------------------
+# 2️⃣ Preprocessing (Encoding + Scaling)
+# ---------------------------------------------------------
+@st.cache_resource
+def preprocess_data(df):
+    ohe = OneHotEncoder(handle_unknown='ignore')
+    scaler = StandardScaler()
 
-# Input form
-user_input = {}
-for col in feature_cols:
-    if df[col].dtype == 'object':
-        user_input[col] = st.sidebar.selectbox(col, sorted(df[col].dropna().unique()))
-    else:
-        min_val = int(df[col].min())
-        max_val = int(df[col].max())
-        user_input[col] = st.sidebar.slider(col, min_val, max_val, int(df[col].median()))
+    encoded_cats = ohe.fit_transform(df[cat_cols])
+    scaled_nums = scaler.fit_transform(df[num_cols])
+    cdata = hstack([scaled_nums, encoded_cats])
 
-destination_filter = st.sidebar.selectbox("Filter by Destination (Optional)", ["-- None --"] + sorted(df["Destination"].unique()))
-dest_type_filter = st.sidebar.selectbox("Filter by Destination_Type (Optional)", ["-- None --"] + sorted(df["Destination_Type"].unique()))
+    cosinemodel = NearestNeighbors(n_neighbors=5, metric='cosine')
+    cosinemodel.fit(cdata)
 
-if st.sidebar.button("Get Recommendations"):
-    input_df = pd.DataFrame([user_input])
-    X_query = preprocessor.transform(input_df)
-    distances, indices = model.kneighbors(X_query, n_neighbors=10)
+    return ohe, scaler, cosinemodel, cdata
 
-    results = []
-    for dist, idx in zip(distances[0], indices[0]):
-        package = df.iloc[idx].copy()
-        package['Similarity_Score'] = round(1 - dist, 6)
-        results.append(package)
+ohe, scaler, cosinemodel, cdata = preprocess_data(df)
+st.success("✅ Model trained successfully!")
 
-    rec_df = pd.DataFrame(results)
+# ---------------------------------------------------------
+# 3️⃣ User Input Section
+# ---------------------------------------------------------
+st.header("✈️ Enter Your Travel Preferences")
 
-    # Apply optional filters
-    if destination_filter != "-- None --":
-        rec_df = rec_df[rec_df["Destination"] == destination_filter]
-    if dest_type_filter != "-- None --":
-        rec_df = rec_df[rec_df["Destination_Type"] == dest_type_filter]
+user_data = {}
 
-    if not rec_df.empty:
-        st.success(f"✅ Showing top {len(rec_df)} recommendations")
-        st.dataframe(rec_df[[id_col, "Destination", "Destination_Type", "Approx_Cost (₹)", "Trip_Duration_Days", "Accommodation_Type", "Similarity_Score"]])
-    else:
-        st.warning("⚠️ No matching packages found. Try relaxing the filters.")
+# Categorical Inputs
+for col in cat_cols:
+    user_data[col] = st.selectbox(f"Select {col}", df[col].unique())
+
+# Numeric Inputs
+for col in num_cols:
+    user_data[col] = st.number_input(
+        f"Enter {col} (Range: {df[col].min()} - {df[col].max()})",
+        min_value=float(df[col].min()),
+        max_value=float(df[col].max()),
+        value=float(df[col].mean())
+    )
+
+user_df = pd.DataFrame([user_data])
+st.subheader("Your Input:")
+st.dataframe(user_df)
+
+# ---------------------------------------------------------
+# 4️⃣ Recommendations
+# ---------------------------------------------------------
+if st.button("🔍 Recommend Packages"):
+    # Transform input
+    user_cat = ohe.transform(user_df[cat_cols])
+    user_num = scaler.transform(user_df[num_cols])
+    user_vector = np.hstack([user_num, user_cat.toarray()])
+
+    # Find nearest neighbors
+    distances, indices = cosinemodel.kneighbors(user_vector)
+    top_packages = df.iloc[indices[0]].copy()
+    top_packages['Similarity_Score'] = 1 - distances.flatten()
+
+    # Display top recommendations
+    top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type',
+                                         'Trip_Duration_Days', 'Budget_Range', 'Approx_Cost',
+                                         'Accommodation_Type', 'Transport_Mode', 'Activity_Count',
+                                         'Package_Type', 'Similarity_Score']]
+    st.subheader("🎯 Top Recommended Packages")
+    st.dataframe(top_packages_display)
+
