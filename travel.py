@@ -22,7 +22,7 @@ def load_data():
 df = load_data()
 st.success(f"✅ Data loaded successfully! Shape: {df.shape}")
 
-cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range',
+cat_cols = ['From_City', 'Destination','Budget_Range',
             'Accommodation_Type', 'Transport_Mode', 'Meal_Plan',
             'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']
 
@@ -84,11 +84,12 @@ if st.button("🔍 Recommend Similar Packages"):
     top_packages = df.iloc[indices[0]].copy()
     top_packages['Similarity_Score'] = 1 - distances.flatten()
 
-    top_packages_display = top_packages[['From_City', 'Destination',
+    top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type',
                                          'Trip_Duration_Days', 'Budget_Range', 'Approx_Cost',
                                          'Accommodation_Type', 'Transport_Mode', 'Activity_Count',
                                          'Package_Type', 'Similarity_Score']]
 
     st.subheader("🎯 Top Recommended Travel Packages")
     st.dataframe(top_packages_display)
+
 
