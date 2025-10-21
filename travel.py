@@ -22,7 +22,7 @@ def load_data():
 df = load_data()
 st.success(f"✅ Data loaded successfully! Shape: {df.shape}")
 
-cat_cols = ['From_City', 'Destination','Budget_Range',
+cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range',
             'Accommodation_Type', 'Transport_Mode', 'Meal_Plan',
             'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']
 
@@ -91,5 +91,6 @@ if st.button("🔍 Recommend Similar Packages"):
 
     st.subheader("🎯 Top Recommended Travel Packages")
     st.dataframe(top_packages_display)
+
 
 
