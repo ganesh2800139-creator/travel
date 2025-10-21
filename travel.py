@@ -39,7 +39,7 @@ else:
                 'Accommodation_Type', 'Transport_Mode', 'Meal_Plan',
                 'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']
 
-    num_cols = ['Trip_Duration_Days', 'Approx_Cost', 'Activity_Count']
+    num_cols = ['Trip_Duration_Days', 'Approx_Cost (₹)', 'Activity_Count']
 
     # -------------------------------
     # 3️⃣ Ensure columns exist before dropping NaN
@@ -74,7 +74,7 @@ else:
     def recommend_similar_trips(from_city, destination, budget_range, accommodation_type,
                                 transport_mode, meal_plan, activity_types, season,
                                 package_type, recommended_for, trip_duration_days,
-                                approx_cost, activity_count):
+                                Approx_Cost (₹), activity_count):
 
         input_df = pd.DataFrame([{
             'From_City': from_city,
@@ -88,7 +88,7 @@ else:
             'Package_Type': package_type,
             'Recommended_For': recommended_for,
             'Trip_Duration_Days': trip_duration_days,
-            'Approx_Cost': approx_cost,
+            'Approx_Cost (₹)': Approx_Cost (₹),
             'Activity_Count': activity_count
         }])
 
@@ -103,7 +103,7 @@ else:
         similar = df.iloc[indices[0]].copy()
         similar['Similarity'] = 1 - distances[0]
 
-        output_cols = ['From_City', 'Destination', 'Destination_Type', 'Approx_Cost', 'Similarity']
+        output_cols = ['From_City', 'Destination', 'Destination_Type', 'Approx_Cost (₹)', 'Similarity']
         output_cols = [col for col in output_cols if col in similar.columns]
 
         return similar[output_cols]
@@ -123,10 +123,11 @@ else:
         package_type='Leisure',
         recommended_for='Couples',
         trip_duration_days=5,
-        approx_cost=40000,
+        Approx_Cost (₹)=40000,
         activity_count=6
     )
 
     print("🔹 Recommended Similar Trips:")
     print(sample_result)
+
 
