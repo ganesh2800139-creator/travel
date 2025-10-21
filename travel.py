@@ -101,3 +101,4 @@ sample_result = recommend_similar_trips(
 print("🔹 Recommended Similar Trips:")
 print(sample_result)
 
+
