@@ -84,10 +84,11 @@ if st.button("🔍 Recommend Similar Packages"):
     top_packages = df.iloc[indices[0]].copy()
     top_packages['Similarity_Score'] = 1 - distances.flatten()
 
-    top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type',
+    top_packages_display = top_packages[['From_City', 'Destination',
                                          'Trip_Duration_Days', 'Budget_Range', 'Approx_Cost',
                                          'Accommodation_Type', 'Transport_Mode', 'Activity_Count',
                                          'Package_Type', 'Similarity_Score']]
 
     st.subheader("🎯 Top Recommended Travel Packages")
     st.dataframe(top_packages_display)
+
