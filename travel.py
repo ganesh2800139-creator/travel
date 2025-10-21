@@ -1,4 +1,4 @@
-# travel_app.py
+# travel_app.py  — Option 1: User selects destination
 
 import streamlit as st
 import pandas as pd
@@ -22,8 +22,8 @@ def load_data():
 df = load_data()
 st.success(f"✅ Data loaded successfully! Shape: {df.shape}")
 
-cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range', 
-            'Accommodation_Type', 'Transport_Mode', 'Meal_Plan', 
+cat_cols = ['From_City', 'Destination', 'Destination_Type', 'Budget_Range',
+            'Accommodation_Type', 'Transport_Mode', 'Meal_Plan',
             'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']
 
 num_cols = ['Trip_Duration_Days', 'Approx_Cost', 'Activity_Count']
@@ -43,9 +43,9 @@ def preprocess_data(df):
     cosinemodel = NearestNeighbors(n_neighbors=5, metric='cosine')
     cosinemodel.fit(cdata)
 
-    return ohe, scaler, cosinemodel, cdata
+    return ohe, scaler, cosinemodel
 
-ohe, scaler, cosinemodel, cdata = preprocess_data(df)
+ohe, scaler, cosinemodel = preprocess_data(df)
 st.success("✅ Model trained successfully!")
 
 # ---------------------------------------------------------
@@ -55,11 +55,11 @@ st.header("✈️ Enter Your Travel Preferences")
 
 user_data = {}
 
-# Categorical Inputs
+# --- categorical inputs ---
 for col in cat_cols:
-    user_data[col] = st.selectbox(f"Select {col}", df[col].unique())
+    user_data[col] = st.selectbox(f"Select {col}", sorted(df[col].dropna().unique()))
 
-# Numeric Inputs
+# --- numeric inputs ---
 for col in num_cols:
     user_data[col] = st.number_input(
         f"Enter {col} (Range: {df[col].min()} - {df[col].max()})",
@@ -69,28 +69,25 @@ for col in num_cols:
     )
 
 user_df = pd.DataFrame([user_data])
-st.subheader("Your Input:")
+st.subheader("🧾 Your Input:")
 st.dataframe(user_df)
 
 # ---------------------------------------------------------
 # 4️⃣ Recommendations
 # ---------------------------------------------------------
-if st.button("🔍 Recommend Packages"):
-    # Transform input
+if st.button("🔍 Recommend Similar Packages"):
     user_cat = ohe.transform(user_df[cat_cols])
     user_num = scaler.transform(user_df[num_cols])
     user_vector = np.hstack([user_num, user_cat.toarray()])
 
-    # Find nearest neighbors
     distances, indices = cosinemodel.kneighbors(user_vector)
     top_packages = df.iloc[indices[0]].copy()
     top_packages['Similarity_Score'] = 1 - distances.flatten()
 
-    # Display top recommendations
     top_packages_display = top_packages[['From_City', 'Destination', 'Destination_Type',
                                          'Trip_Duration_Days', 'Budget_Range', 'Approx_Cost',
                                          'Accommodation_Type', 'Transport_Mode', 'Activity_Count',
                                          'Package_Type', 'Similarity_Score']]
-    st.subheader("🎯 Top Recommended Packages")
-    st.dataframe(top_packages_display)
 
+    st.subheader("🎯 Top Recommended Travel Packages")
+    st.dataframe(top_packages_display)
