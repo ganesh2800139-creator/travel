@@ -11,7 +11,7 @@ from scipy.sparse import hstack
 # -------------------------------
 # 1️⃣ Load & Prepare Data
 # -------------------------------
-df = pd.read_csv("C://Users//ganes//OneDrive//Documents//travel_packages_100.csv")
+df = pd.read_csv("travel_packages_120000.csv")
 
 cat_cols = ['From_City', 'Destination', 'Budget_Range',
             'Accommodation_Type', 'Transport_Mode', 'Meal_Plan',
@@ -100,3 +100,4 @@ sample_result = recommend_similar_trips(
 
 print("🔹 Recommended Similar Trips:")
 print(sample_result)
+
