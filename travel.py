@@ -12,7 +12,7 @@ from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 # ============================================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("travel_packages_120000.csv")  # update with your file name
+    df = pd.read_csv("travel_packages_200k.csv")  # update with your file name
     return df
 
 df = load_data()
@@ -98,5 +98,6 @@ st.dataframe(recommended_trips[['Package_ID', 'From_City', 'Destination', 'Desti
        'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']].assign(
     Similarity=recommended_trips["Similarity"].round(6)
 ))
+
 
 
