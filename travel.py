@@ -1,133 +1,158 @@
-# ---------------------------------------------------------
-# 🧭 Travel Recommendation System using Cosine Similarity
-# ---------------------------------------------------------
+# ============================================
+# 📌 TRAVEL PACKAGE RECOMMENDATION SYSTEM (Streamlit App)
+# ============================================
 
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.neighbors import NearestNeighbors
-from scipy.sparse import hstack
-import os
+import streamlit as st
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
+from sklearn.metrics.pairwise import cosine_similarity
 
-# -------------------------------
-# 1️⃣ Load & Prepare Data Safely
-# -------------------------------
-file_path = "travel_packages_120000.csv"
+# ============================================
+# STEP 1: Load Dataset
+# ============================================
+@st.cache_data
+def load_data():
+    df = pd.read_csv("travel_packages_120000.csv")
+    df.columns = df.columns.str.strip()
+    return df
 
-if not os.path.exists(file_path):
-    print(f"⚠️ Error: File '{file_path}' does not exist. Please upload the CSV.")
-    df = pd.DataFrame()
-elif os.path.getsize(file_path) == 0:
-    print(f"⚠️ Error: File '{file_path}' is empty. Please provide a CSV with data.")
-    df = pd.DataFrame()
-else:
-    try:
-        df = pd.read_csv(file_path)
-        print(f"✅ Loaded CSV with {df.shape[0]} rows and {df.shape[1]} columns.")
-    except pd.errors.EmptyDataError:
-        print(f"⚠️ Error: CSV file is empty or invalid.")
-        df = pd.DataFrame()
+df = load_data()
+st.success(f"✅ Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
 
-# If df is empty, skip further processing
-if df.empty:
-    print("❌ No data to process. Exiting script.")
-else:
-    # -------------------------------
-    # 2️⃣ Define Columns
-    # -------------------------------
-    cat_cols = ['From_City', 'Destination', 'Budget_Range',
-                'Accommodation_Type', 'Transport_Mode', 'Meal_Plan',
-                'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']
+# ============================================
+# STEP 2: Preprocess Data
+# ============================================
+feature_cols = [
+    'Destination_Type',
+    'Trip_Duration_Days',
+    'Approx_Cost (₹)',
+    'Accommodation_Type',
+    'Transport_Mode',
+    'Season',
+    'Package_Type'
+]
 
-    num_cols = ['Trip_Duration_Days', 'Approx_Cost (₹)', 'Activity_Count']
+df[feature_cols] = df[feature_cols].fillna('Unknown')
 
-    # -------------------------------
-    # 3️⃣ Ensure columns exist before dropping NaN
-    # -------------------------------
-    existing_cols = [col for col in cat_cols + num_cols + ['Destination_Type'] if col in df.columns]
-    missing_cols = list(set(cat_cols + num_cols + ['Destination_Type']) - set(existing_cols))
-    if missing_cols:
-        print(f"⚠️ Warning: Missing columns in CSV and will be ignored: {missing_cols}")
+numeric_features = ['Trip_Duration_Days', 'Approx_Cost (₹)']
+categorical_features = [c for c in feature_cols if c not in numeric_features]
 
-    df = df.dropna(subset=existing_cols).reset_index(drop=True)
+# Encoding and Scaling
+ohe = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+encoded_cats = ohe.fit_transform(df[categorical_features])
+encoded_cat_df = pd.DataFrame(encoded_cats, columns=ohe.get_feature_names_out(categorical_features))
 
-    # -------------------------------
-    # 4️⃣ Encode Features
-    # -------------------------------
-    encoder = OneHotEncoder(handle_unknown='ignore')
-    scaler = StandardScaler()
+scaler = MinMaxScaler()
+scaled_nums = scaler.fit_transform(df[numeric_features])
+scaled_num_df = pd.DataFrame(scaled_nums, columns=numeric_features)
 
-    X_cat = encoder.fit_transform(df[[col for col in cat_cols if col in df.columns]])
-    X_num = scaler.fit_transform(df[[col for col in num_cols if col in df.columns]])
+processed_features = pd.concat([encoded_cat_df, scaled_num_df], axis=1)
 
-    X_final = hstack([X_cat, X_num])
+# ============================================
+# STEP 3: Feature Weights
+# ============================================
+weights = {
+    'Destination_Type': 0.4,
+    'Trip_Duration_Days': 0.2,
+    'Approx_Cost (₹)': 0.25,
+    'Accommodation_Type': 0.05,
+    'Transport_Mode': 0.05,
+    'Season': 0.025,
+    'Package_Type': 0.025
+}
 
-    # -------------------------------
-    # 5️⃣ Fit Nearest Neighbors (cosine)
-    # -------------------------------
-    knn = NearestNeighbors(n_neighbors=6, metric='cosine')
-    knn.fit(X_final)
+for col in ohe.get_feature_names_out():
+    for key in weights:
+        if col.startswith(key):
+            processed_features[col] *= weights[key]
+for num_col in numeric_features:
+    processed_features[num_col] *= weights[num_col]
 
-    # -------------------------------
-    # 6️⃣ Recommendation Function
-    # -------------------------------
-    def recommend_similar_trips(from_city, destination, budget_range, accommodation_type,
-                                transport_mode, meal_plan, activity_types, season,
-                                package_type, recommended_for, trip_duration_days,
-                                approx_cost, activity_count):
+# ============================================
+# STEP 4: Helper Functions
+# ============================================
+def get_destinations_by_city(from_city):
+    return sorted(df[df['From_City'] == from_city]['Destination'].unique().tolist())
 
-        # Map Python variable approx_cost to CSV column name
-        input_df = pd.DataFrame([{
-            'From_City': from_city,
-            'Destination': destination,
-            'Budget_Range': budget_range,
-            'Accommodation_Type': accommodation_type,
-            'Transport_Mode': transport_mode,
-            'Meal_Plan': meal_plan,
-            'Activity_Types': activity_types,
-            'Season': season,
-            'Package_Type': package_type,
-            'Recommended_For': recommended_for,
-            'Trip_Duration_Days': trip_duration_days,
-            'Approx_Cost (₹)': approx_cost,
-            'Activity_Count': activity_count
-        }])
+def get_destination_types(from_city, destination):
+    return sorted(df[(df['From_City'] == from_city) & (df['Destination'] == destination)]
+                  ['Destination_Type'].unique().tolist())
 
-        input_cat_cols = [col for col in cat_cols if col in df.columns]
-        input_num_cols = [col for col in num_cols if col in df.columns]
+def get_reference_vector(destination_type, duration, approx_cost):
+    temp = pd.DataFrame([['Unknown'] * len(categorical_features) + [0, 0]],
+                        columns=categorical_features + numeric_features)
+    temp.loc[0, 'Destination_Type'] = destination_type
+    temp.loc[0, 'Trip_Duration_Days'] = duration
+    temp.loc[0, 'Approx_Cost (₹)'] = approx_cost
 
-        input_cat = encoder.transform(input_df[input_cat_cols])
-        input_num = scaler.transform(input_df[input_num_cols])
-        input_final = hstack([input_cat, input_num])
+    temp_encoded = ohe.transform(temp[categorical_features])
+    temp_encoded_df = pd.DataFrame(temp_encoded, columns=ohe.get_feature_names_out(categorical_features))
 
-        distances, indices = knn.kneighbors(input_final)
-        similar = df.iloc[indices[0]].copy()
-        similar['Similarity'] = 1 - distances[0]
+    temp_scaled = scaler.transform(temp[numeric_features])
+    temp_scaled_df = pd.DataFrame(temp_scaled, columns=numeric_features)
 
-        output_cols = ['From_City', 'Destination', 'Destination_Type', 'Approx_Cost (₹)', 'Similarity']
-        output_cols = [col for col in output_cols if col in similar.columns]
+    temp_vector = pd.concat([temp_encoded_df, temp_scaled_df], axis=1)
 
-        return similar[output_cols]
+    for col in ohe.get_feature_names_out():
+        for key in weights:
+            if col.startswith(key):
+                temp_vector[col] *= weights[key]
+    for num_col in numeric_features:
+        temp_vector[num_col] *= weights[num_col]
 
-    # -------------------------------
-    # 7️⃣ Example Usage
-    # -------------------------------
-    sample_result = recommend_similar_trips(
-        from_city='Mumbai',
-        destination='Goa',
-        budget_range='Medium',
-        accommodation_type='Resort',
-        transport_mode='Flight',
-        meal_plan='Breakfast',
-        activity_types='Beach, Adventure',
-        season='Winter',
-        package_type='Leisure',
-        recommended_for='Couples',
-        trip_duration_days=5,
-        approx_cost=40000,   # Python variable
-        activity_count=6
-    )
+    return temp_vector.values
 
-    print("🔹 Recommended Similar Trips:")
-    print(sample_result)
+def recommend_packages(from_city, destination, destination_type, duration, approx_cost, top_n=5):
+    filtered_df = df[(df['From_City'] == from_city) &
+                     (df['Destination'] == destination) &
+                     (df['Destination_Type'] == destination_type)]
+    if filtered_df.empty:
+        return pd.DataFrame()
+
+    filtered_features = processed_features.loc[filtered_df.index]
+    ref_vector = get_reference_vector(destination_type, duration, approx_cost)
+
+    sim_scores = cosine_similarity(ref_vector, filtered_features)[0]
+    top_idx = np.argsort(sim_scores)[::-1][:top_n]
+
+    top_packages = filtered_df.iloc[top_idx].copy()
+    top_packages['Similarity_Score'] = sim_scores[top_idx]
+    return top_packages[['From_City','Destination','Destination_Type','Package_Type',
+                         'Trip_Duration_Days','Approx_Cost (₹)',
+                         'Accommodation_Type','Transport_Mode','Season','Similarity_Score']]
+
+# ============================================
+# STEP 5: Streamlit UI
+# ============================================
+st.title("🌍 Travel Package Recommendation System")
+st.write("Get best matching travel packages based on your preferences.")
+
+# --- From City ---
+from_city = st.selectbox("✈️ Select From City", sorted(df['From_City'].unique()))
+if from_city:
+    destinations = get_destinations_by_city(from_city)
+
+    if destinations:
+        destination = st.selectbox("🏝️ Select Destination", destinations)
+        if destination:
+            destination_types = get_destination_types(from_city, destination)
+
+            if destination_types:
+                destination_type = st.selectbox("🌄 Select Destination Type", destination_types)
+
+                trip_duration = st.number_input("🗓️ Trip Duration (days)", min_value=1, value=5, step=1)
+                approx_cost = st.number_input("💰 Approx Cost (₹)", min_value=1000, value=20000, step=500)
+
+                if st.button("🔍 Recommend Packages"):
+                    result = recommend_packages(from_city, destination, destination_type, trip_duration, approx_cost)
+                    if not result.empty:
+                        st.success(f"Top {len(result)} Recommended Packages:")
+                        st.dataframe(result.reset_index(drop=True))
+                    else:
+                        st.warning("No packages found for the selected options.")
+            else:
+                st.warning("No destination types found for this destination.")
+    else:
+        st.warning("No destinations found for this city.")
 
