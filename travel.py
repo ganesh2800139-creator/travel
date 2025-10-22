@@ -81,7 +81,7 @@ user_vector = np.hstack([user_encoded, user_scaled])
 # ============================================
 # STEP 5: Nearest Neighbors
 # ============================================
-model = NearestNeighbors(n_neighbors=6, metric='cosine')
+model = NearestNeighbors(n_neighbors=5, metric='cosine')
 model.fit(X)
 distances, indices = model.kneighbors(user_vector)
 
@@ -98,4 +98,5 @@ st.dataframe(recommended_trips[['Package_ID', 'From_City', 'Destination', 'Desti
        'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']].assign(
     Similarity=recommended_trips["Similarity"].round(6)
 ))
+
 
