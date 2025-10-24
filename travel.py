@@ -7,9 +7,7 @@ import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 
-# ============================================
-# STEP 1: Load Data
-# ============================================
+
 @st.cache_data
 def load_data():
     df = pd.read_csv("travel_packages_200k.csv")  # update with your file name
@@ -18,9 +16,7 @@ def load_data():
 df = load_data()
 st.success(f"✅ Loaded CSV with {df.shape[0]} rows and {df.shape[1]} columns.")
 
-# ============================================
-# STEP 2: User Inputs
-# ============================================
+
 st.header("🧳 Travel Package Recommendation System")
 
 # From City
@@ -40,9 +36,7 @@ trip_duration = st.number_input("🕒 Trip Duration (Days):", min_value=1, max_v
 # Approx Cost
 approx_cost = st.number_input("💰 Approx Cost (₹):", min_value=1000, step=500, value=20000)
 
-# ============================================
-# STEP 3: Encode Features
-# ============================================
+
 features = ["From_City", "Destination", "Destination_Type"]
 num_features = ["Trip_Duration_Days", "Approx_Cost"]
 
@@ -63,9 +57,7 @@ scaled_nums_df = pd.DataFrame(scaled_nums, columns=num_features)
 # Combine
 X = np.hstack([encoded_cats_df, scaled_nums_df])
 
-# ============================================
-# STEP 4: Create Input Vector for User
-# ============================================
+
 user_df = pd.DataFrame({
     "From_City": [from_city],
     "Destination": [destination],
@@ -78,16 +70,12 @@ user_encoded = ohe.transform(user_df[features]).toarray()
 user_scaled = scaler.transform(user_df[num_features])
 user_vector = np.hstack([user_encoded, user_scaled])
 
-# ============================================
-# STEP 5: Nearest Neighbors
-# ============================================
+
 model = NearestNeighbors(n_neighbors=5, metric='cosine')
 model.fit(X)
 distances, indices = model.kneighbors(user_vector)
 
-# ============================================
-# STEP 6: Display Recommendations
-# ============================================
+
 recommended_trips = df.iloc[indices[0]].copy()
 recommended_trips["Similarity"] = 1 - distances[0]
 
@@ -98,6 +86,7 @@ st.dataframe(recommended_trips[['Package_ID', 'From_City', 'Destination', 'Desti
        'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']].assign(
     Similarity=recommended_trips["Similarity"].round(6)
 ))
+
 
 
 
