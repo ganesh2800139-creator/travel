@@ -78,6 +78,7 @@ This project is licensed under the MIT License – feel free to use and modify i
 
 👨‍💻 Author
 
-Data Science : 1. Anitha Sirigireddy 2. NaveenKumarReddy Bapathi 3. Ganesh Sura [email:ganesh2800139@gmail.com] [ GitHub:https://github.com/ganesh2800139-creator]
+ Ganesh Sura 
+ [email:ganesh2800139@gmail.com] 
+ [ GitHub:https://github.com/ganesh2800139-creator]
 
-Full Stack Development : 1. Shreyas Kandekar 2. Rajoli Srinivas 3. Malli Prudhvi
