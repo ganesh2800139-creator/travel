@@ -46,7 +46,7 @@ Top 5 most similar packages are shown with similarity scores.
 
 🧩 Example Screenshot
 
-App Screenshot(https://i.postimg.cc/9XgZFcXK/Screenshot-2025-10-24-152922.png)
+![App Screenshot](https://i.postimg.cc/9XgZFcXK/Screenshot-2025-10-24-152922.png)
 
 🛠️ Future Enhancements
 
