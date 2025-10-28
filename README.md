@@ -41,6 +41,7 @@ Package_Type	Family / Solo / Couple / Group
 Similarity	Computed similarity score (added by model)
 
 🧠 How It Works
+
 1️⃣ User Inputs Preferences:
 
 Departure City
