@@ -16,7 +16,7 @@ st.caption("Personalized travel recommendations based on city, destination, and 
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("travel_packages_200k.csv")
+    df = pd.read_csv("C:\Users\ganes\PythonFiles\realistic_final_travel_packages_dataset_v4.csv")
     df.columns = df.columns.str.strip()
     return df
 
@@ -170,3 +170,4 @@ if st.button("🚀 Get Recommendations"):
                                   'Accommodation_Type','Transport_Mode','Season','Similarity_Score']])
     else:
         st.warning("⚠ Please select all required options before getting recommendations.")
+
