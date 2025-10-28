@@ -62,7 +62,7 @@ user_df = pd.DataFrame({
     "Destination": [destination],
     "Destination_Type": [destination_type],
     "Trip_Duration_Days": [trip_duration],
-    "Budget": [Budget]
+    "Budget": [budget]
 })
 
 user_encoded = ohe.transform(user_df[features]).toarray()
@@ -85,6 +85,7 @@ st.dataframe(recommended_trips[['Package_ID', 'From_City', 'Destination', 'Desti
         'Season', 'Package_Type']].assign(
     Similarity=recommended_trips["Similarity"].round(6)
 ))
+
 
 
 
