@@ -13,18 +13,18 @@ The app analyzes a large dataset of real-world travel packages and finds the mos
 ✅ Data Preprocessing – Utilizes OneHotEncoder for categorical encoding and MinMaxScaler for numerical normalization.
 ✅ Dynamic Filtering – Destination and type dropdowns update automatically based on the selected departure city.
 ✅ Similarity Score Display – Shows how close each recommendation is to the user’s preferences.
-✅ Scalable Design – Efficiently handles large datasets without performance issues.
+✅ Scalable Design – Efficiently handles dataset without performance issues.
 
 🏗️ Tech Stack
+
 Component	Description
 Language	Python
 Frontend	Streamlit
 ML Algorithm	K-Nearest Neighbors (Cosine Similarity)
 Libraries Used	pandas, numpy, scikit-learn, streamlit
 Dataset	realistic_final_travel_packages_dataset_v4.csv (custom dataset with detailed travel packages)
-📊 Dataset Structure
 
-Ensure your dataset (e.g. realistic_final_travel_packages_dataset_v4.csv) contains the following columns:
+📊 Dataset Structure
 
 Column	Description
 Package_ID	Unique travel package identifier
@@ -73,6 +73,8 @@ Displays the top 5 recommended trips along with similarity scores in a Streamlit
 Each recommendation includes details like destination, duration, transport, and package type.
 
 🧩 Example Screenshot
+
+![App Screenshot](https://i.postimg.cc/9XgZFcXK/Screenshot-2025-10-24-152922.png)
 
 🛠️ Future Enhancements
 
