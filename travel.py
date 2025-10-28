@@ -79,12 +79,13 @@ recommended_trips = df.iloc[indices[0]].copy()
 recommended_trips["Similarity"] = 1 - distances[0]
 
 st.subheader("🔹 Recommended Similar Trips:")
-st.dataframe(recommended_trips[['Package_ID', 'From_City', 'Destination', 'Destination_Type',
+st.dataframe(recommended_trips[['Package_Type', 'From_City', 'Destination', 'Destination_Type',
        'Trip_Duration_Days', 'Budget',
        'Accommodation', 'Transport_Mode',  'Activities_Count',
         'Season', 'Package_Type']].assign(
     Similarity=recommended_trips["Similarity"].round(6)
 ))
+
 
 
 
