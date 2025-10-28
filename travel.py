@@ -34,7 +34,7 @@ destination_type = st.selectbox("🏖️ Select Destination Type:", sorted(desti
 trip_duration = st.number_input("🕒 Trip_Duration_Days:", min_value=1, max_value=30, value=5)
 
 # Approx Cost
-approx_cost = st.number_input("💰Budget:", min_value=1000, step=500, value=20000)
+budget = st.number_input("💰Budget:", min_value=1000, step=500, value=20000)
 
 
 features = ["From_City", "Destination", "Destination_Type"]
@@ -62,7 +62,7 @@ user_df = pd.DataFrame({
     "Destination": [destination],
     "Destination_Type": [destination_type],
     "Trip_Duration_Days": [trip_duration],
-    "Budget": [approx_cost]
+    "Budget": [budget]
 })
 
 user_encoded = ohe.transform(user_df[features]).toarray()
@@ -85,6 +85,7 @@ st.dataframe(recommended_trips[['Package_ID', 'From_City', 'Destination', 'Desti
         'Season', 'Package_Type']].assign(
     Similarity=recommended_trips["Similarity"].round(6)
 ))
+
 
 
 
