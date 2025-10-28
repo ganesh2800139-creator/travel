@@ -10,7 +10,7 @@ from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Travels_Pack.csv")  # update with your file name
+    df = pd.read_csv("realistic_final_travel_packages_dataset_v4.csv")  # update with your file name
     return df
 
 df = load_data()
@@ -31,18 +31,17 @@ destination_types_for_destination = df[df["Destination"] == destination]["Destin
 destination_type = st.selectbox("🏖️ Select Destination Type:", sorted(destination_types_for_destination))
 
 # Trip Duration
-trip_duration = st.number_input("🕒 Trip Duration (Days):", min_value=1, max_value=30, value=5)
+trip_duration = st.number_input("🕒 Trip_Duration_Days:", min_value=1, max_value=30, value=5)
 
 # Approx Cost
-approx_cost = st.number_input("💰 Approx Cost (₹):", min_value=1000, step=500, value=20000)
+approx_cost = st.number_input("💰Budget:", min_value=1000, step=500, value=20000)
 
 
 features = ["From_City", "Destination", "Destination_Type"]
-num_features = ["Trip_Duration_Days", "Approx_Cost"]
+num_features = ["Trip_Duration_Days", "Budget"]
 
 # Create a copy for processing
 df_features = df.copy()
-df_features.rename(columns={"Trip_Duration_Days": "Trip_Duration_Days", "Approx_Cost (₹)": "Approx_Cost"}, inplace=True)
 
 # Encode categorical
 ohe = OneHotEncoder(handle_unknown="ignore")
@@ -63,7 +62,7 @@ user_df = pd.DataFrame({
     "Destination": [destination],
     "Destination_Type": [destination_type],
     "Trip_Duration_Days": [trip_duration],
-    "Approx_Cost": [approx_cost]
+    "Budget": [Budget]
 })
 
 user_encoded = ohe.transform(user_df[features]).toarray()
@@ -81,11 +80,12 @@ recommended_trips["Similarity"] = 1 - distances[0]
 
 st.subheader("🔹 Recommended Similar Trips:")
 st.dataframe(recommended_trips[['Package_ID', 'From_City', 'Destination', 'Destination_Type',
-       'Trip_Duration_Days', 'Budget_Range', 'Approx_Cost (₹)',
-       'Accommodation_Type', 'Transport_Mode', 'Meal_Plan', 'Activity_Count',
-       'Activity_Types', 'Season', 'Package_Type', 'Recommended_For']].assign(
+       'Trip_Duration_Days', 'Budget',
+       'Accommodation', 'Transport_Mode',  'Activities_Count',
+        'Season', 'Package_Type']].assign(
     Similarity=recommended_trips["Similarity"].round(6)
 ))
+
 
 
 
