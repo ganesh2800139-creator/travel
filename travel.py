@@ -17,7 +17,7 @@ def load_data():
     return df
 
 df = load_data()
-st.success(f"✅ Loaded CSV with {df.shape[0]} rows and {df.shape[1]} columns.")
+# st.success(f"✅ Loaded CSV with {df.shape[0]} rows and {df.shape[1]} columns.")
 
 st.header("🧳 Travel Package Recommendation System")
 
@@ -105,5 +105,6 @@ if not available_columns:
     st.error("⚠ No valid columns available to display. Please check your dataset headers.")
 else:
     st.dataframe(recommended_trips[available_columns])
+
 
 
