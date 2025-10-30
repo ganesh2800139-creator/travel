@@ -1,124 +1,107 @@
-# ==========================================
-# 🧭 TRAVEL PACKAGE RECOMMENDER SYSTEM
-# Weighted Cosine Similarity (Top 5 Packages)
-# ==========================================
+# ============================================
+# 🧭 Travel Package Recommendation App (Cleaned)
+# ============================================
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 
-# -------------------------
-# 1️⃣ Load & preprocess data
-# -------------------------
-st.set_page_config(page_title="Travel Package Recommender", page_icon="🧭", layout="wide")
+# -------------------------------
+# 1️⃣ Load Data
+# -------------------------------
+@st.cache_data
+def load_data():
+    df = pd.read_csv("packagedata_with_id.csv")  # update with your file name
+    return df
 
-st.title("🧭 Travel Package Recommender System")
-st.markdown("### ✈ Personalized Travel Recommendations using Weighted Cosine Similarity")
+df = load_data()
+st.success(f"✅ Loaded CSV with {df.shape[0]} rows and {df.shape[1]} columns.")
 
-# Load dataset
-uploaded_file = st.file_uploader("📂 Upload your travel packages dataset (CSV)", type=["csv"])
+st.header("🧳 Travel Package Recommendation System")
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    df.columns = df.columns.str.strip().str.replace(" ", "_")
+# -------------------------------
+# 2️⃣ User Inputs
+# -------------------------------
+from_city = st.selectbox("✈ Select your Departure City:", sorted(df["From_City"].unique()))
 
-    # Add Package_Id if not present
-    if "Package_Id" not in df.columns:
-        df.insert(0, "Package_Id", [f"Package_Id{i+1}" for i in range(len(df))])
+destinations_for_city = df[df["From_City"] == from_city]["Destination"].unique()
+destination = st.selectbox("📍 Select your Destination:", sorted(destinations_for_city))
 
-    # Select numeric features
-    numeric_features = ["Budget", "Trip_Duration_Days", "Activities_Count"]
+destination_types_for_destination = df[df["Destination"] == destination]["Destination_Type"].unique()
+destination_type = st.selectbox("🏖 Select Destination Type:", sorted(destination_types_for_destination))
 
-    # Normalize numeric values
-    scaler = MinMaxScaler()
-    df_scaled = df.copy()
-    df_scaled[numeric_features] = scaler.fit_transform(df[numeric_features])
+trip_duration = st.number_input("🕒 Trip Duration (Days):", min_value=1, max_value=30, value=5)
+budget = st.number_input("💰 Budget:", min_value=1000, step=500, value=20000)
 
-    # Define weights
-    weights = {
-        "Budget": 0.3,
-        "Trip_Duration_Days": 0.2,
-        "Activities_Count": 0.1,
-        "From_City": 0.15,
-        "Destination": 0.15,
-        "Destination_Type": 0.1
-    }
+# -------------------------------
+# 3️⃣ Feature Preparation
+# -------------------------------
+features = ["From_City", "Destination", "Destination_Type"]
+num_features = ["Trip_Duration_Days", "Budget"]
 
-    # -------------------------
-    # 2️⃣ Recommendation function
-    # -------------------------
-    def recommend_packages(from_city, destination, dest_type, budget, duration, top_n=5):
-        subset = df_scaled[
-            (df_scaled["From_City"].str.lower() == from_city.lower()) &
-            (df_scaled["Destination"].str.lower() == destination.lower()) &
-            (df_scaled["Destination_Type"].str.lower() == dest_type.lower())
-        ].copy()
+df_features = df.copy()
 
-        if subset.empty:
-            return None
+# Encode categorical
+ohe = OneHotEncoder(handle_unknown="ignore")
+encoded_cats = ohe.fit_transform(df_features[features]).toarray()
+encoded_cats_df = pd.DataFrame(encoded_cats, columns=ohe.get_feature_names_out(features))
 
-        user_data = pd.DataFrame([{
-            "Budget": budget,
-            "Trip_Duration_Days": duration,
-            "Activities_Count": df["Activities_Count"].mean()
-        }])
+# Normalize numerical
+scaler = MinMaxScaler()
+scaled_nums = scaler.fit_transform(df_features[num_features])
+scaled_nums_df = pd.DataFrame(scaled_nums, columns=num_features)
 
-        user_scaled = scaler.transform(user_data[numeric_features])
-        user_scaled = pd.DataFrame(user_scaled, columns=numeric_features)
+# Combine features
+X = np.hstack([encoded_cats_df, scaled_nums_df])
 
-        for col in numeric_features:
-            subset[col] = subset[col] * weights.get(col, 0)
-            user_scaled[col] = user_scaled[col] * weights.get(col, 0)
+# -------------------------------
+# 4️⃣ Prepare User Input Vector
+# -------------------------------
+user_df = pd.DataFrame({
+    "From_City": [from_city],
+    "Destination": [destination],
+    "Destination_Type": [destination_type],
+    "Trip_Duration_Days": [trip_duration],
+    "Budget": [budget]
+})
 
-        similarity = cosine_similarity(user_scaled, subset[numeric_features])[0]
+user_encoded = ohe.transform(user_df[features]).toarray()
+user_scaled = scaler.transform(user_df[num_features])
+user_vector = np.hstack([user_encoded, user_scaled])
 
-        # Scale similarity between [0.90, 0.97]
-        if similarity.max() != similarity.min():
-            min_target, max_target = 0.90, 0.97
-            similarity = min_target + (max_target - min_target) * (similarity - similarity.min()) / (similarity.max() - similarity.min())
-        else:
-            similarity = np.full_like(similarity, 0.935)
+# -------------------------------
+# 5️⃣ Nearest Neighbors Model
+# -------------------------------
+model = NearestNeighbors(n_neighbors=5, metric='cosine')
+model.fit(X)
+distances, indices = model.kneighbors(user_vector)
 
-        subset["Similarity_Score"] = similarity
+# -------------------------------
+# 6️⃣ Get Recommendations
+# -------------------------------
+recommended_trips = df.iloc[indices[0]].copy().reset_index(drop=True)  # ✅ remove old index
+recommended_trips["Similarity"] = (1 - distances[0]).round(6)
 
-        top_packages = subset.sort_values(by="Similarity_Score", ascending=False).head(top_n)
+# Remove any duplicate columns (safety check)
+recommended_trips = recommended_trips.loc[:, ~recommended_trips.columns.duplicated()]
+recommended_trips.columns = recommended_trips.columns.str.strip()
 
-        result = df.loc[top_packages.index, [
-            "Package_Id", "From_City", "Destination", "Destination_Type", "Trip_Duration_Days",
-            "Activities_Count", "Accommodation", "Transport_Mode",
-            "Package_Type", "Budget", "Season"
-        ]].assign(Similarity_Score=top_packages["Similarity_Score"].round(3))
+# Columns to display
+columns_to_show = [
+    'Package_Id', 'Package_Type', 'From_City', 'Destination', 'Destination_Type',
+    'Trip_Duration_Days', 'Budget', 'Accommodation', 'Transport_Mode',
+    'Activities_Count', 'Season', 'Similarity'
+]
+available_columns = [col for col in columns_to_show if col in recommended_trips.columns]
 
-        return result
+# -------------------------------
+# 7️⃣ Display in Streamlit
+# -------------------------------
+st.subheader("🔹 Recommended Similar Trips:")
 
-    # -------------------------
-    # 3️⃣ User Inputs
-    # -------------------------
-    st.sidebar.header("🎯 Choose Your Preferences")
-
-    from_city = st.sidebar.selectbox("From City", df["From_City"].unique())
-    destination = st.sidebar.selectbox("Destination", df["Destination"].unique())
-
-    available_types = df[df["Destination"].str.lower() == destination.lower()]["Destination_Type"].unique()
-    dest_type = st.sidebar.selectbox("Destination Type", available_types)
-
-    budget = st.sidebar.number_input("Approximate Budget (₹)", min_value=1000.0, max_value=500000.0, value=50000.0, step=1000.0)
-    duration = st.sidebar.number_input("Trip Duration (days)", min_value=1, max_value=30, value=5)
-
-    # -------------------------
-    # 4️⃣ Generate Recommendations
-    # -------------------------
-    if st.sidebar.button("🔍 Find Best Packages"):
-        with st.spinner("Finding best travel packages for you..."):
-            top5 = recommend_packages(from_city, destination, dest_type, budget, duration)
-
-        if top5 is None or top5.empty:
-            st.warning("⚠ No matching packages found for your filters. Try changing your inputs.")
-        else:
-            st.success("🏝 Top 5 Recommended Packages")
-            st.dataframe(top5, use_container_width=True)
-
+if not available_columns:
+    st.error("⚠ No valid columns available to display. Please check your dataset headers.")
 else:
-    st.info("👆 Please upload your travel package dataset to get started.")
+    st.dataframe(recommended_trips[available_columns])
