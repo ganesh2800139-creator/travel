@@ -79,9 +79,13 @@ Each recommendation includes details like destination, duration, transport, and 
 🛠️ Future Enhancements
 
 🚗 Integrate Google Maps API to show trip locations visually.
+
 ⭐ Add user reviews and ratings for each package.
+
 🧮 Implement Deep Learning–based recommendations (e.g., neural collaborative filtering).
+
 🎯 Introduce advanced filters — by season, activity type, or budget range.
+
 📊 Add data visualization dashboards for user insights.
 
 🤝 Contributing
