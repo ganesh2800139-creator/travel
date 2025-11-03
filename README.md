@@ -74,7 +74,7 @@ Each recommendation includes details like destination, duration, transport, and 
 
 🧩 Example Screenshot
 
-![App Screenshot](https://i.postimg.cc/9XgZFcXK/Screenshot-2025-10-24-152922.png)
+![App Screenshot](https://i.postimg.cc/bJFn0Dpt/Screenshot-2025-11-03-153510.png)
 
 🛠️ Future Enhancements
 
