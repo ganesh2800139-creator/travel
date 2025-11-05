@@ -1,116 +1,305 @@
-🧭 Travel Package Recommendation System
-📌 Overview
+# 🧭 Travel Cost & Package Recommender System – *Marghadharshi*
 
-The Travel Package Recommendation System is an intelligent web application built using Streamlit and Machine Learning (KNN with Cosine Similarity).
-It recommends personalized travel packages based on user preferences such as departure city, destination, destination type, trip duration, and budget.
+https://travel-lime-iota.vercel.app/
 
-The app analyzes a large dataset of real-world travel packages and finds the most relevant and similar trips that match the user’s interests, offering an intuitive way to explore and plan travel experiences.
+[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+![Power BI](https://img.shields.io/badge/Power%20BI-Dashboard-F2C811?logo=powerbi&logoColor=black)
+[![Flask](https://img.shields.io/badge/Backend-Flask-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![React](https://img.shields.io/badge/Frontend-React-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-🚀 Features
+---
 
-✅ Interactive UI – Built with Streamlit for a simple, user-friendly interface.
-✅ Smart Recommendations – Uses K-Nearest Neighbors (KNN) with cosine similarity to find the most relevant travel packages.
-✅ Data Preprocessing – Utilizes OneHotEncoder for categorical encoding and MinMaxScaler for numerical normalization.
-✅ Dynamic Filtering – Destination and type dropdowns update automatically based on the selected departure city.
-✅ Similarity Score Display – Shows how close each recommendation is to the user’s preferences.
-✅ Scalable Design – Efficiently handles dataset without performance issues.
+An AI-powered recommendation system that suggests the **Top 5 personalized travel packages** based on user preferences such as departure city, destination type, trip duration, and budget.  
+This project integrates **Machine Learning (KNN with Cosine Similarity)**, **Streamlit**, and **Power BI** to deliver smart, data-driven travel recommendations.
 
-🏗️ Tech Stack
+---
 
-Component	Description
-Language	Python
-Frontend	Streamlit
-ML Algorithm	K-Nearest Neighbors (Cosine Similarity)
-Libraries Used	pandas, numpy, scikit-learn, streamlit
-Dataset	realistic_final_travel_packages_dataset_v4.csv (custom dataset with detailed travel packages)
+## 📌 Project Overview
 
-📊 Dataset Structure
+**Goal:**  
+Build an end-to-end intelligent recommender that analyzes user inputs and returns the most relevant travel packages from a dataset of **22 K+ real-world records**.
 
-Column	Description
-Package_ID	Unique travel package identifier
-From_City	Departure city
-Destination	Travel destination
-Destination_Type	Type of destination (e.g., Beach, Hill Station, Cultural, etc.)
-Trip_Duration_Days	Number of days for the trip
-Budget	Approximate total cost in INR
-Accommodation	Hotel / Resort / Homestay, etc.
-Transport_Mode	Bus / Flight / Train, etc.
-Activities_Count	Number of activities included
-Season	Ideal time to visit
-Package_Type	Family / Solo / Couple / Group
-Similarity	Computed similarity score (added by model)
+**Key Inputs:**  
+From City | Destination | Destination Type | Trip Duration | Budget  
 
-🧠 How It Works
+**Outputs:**  
+Top 5 similar packages with details like cost, duration, accommodation, and type.
 
-1️⃣ User Inputs Preferences:
+**Tech Stack**
 
-Departure City
+| Component | Description |
+|------------|-------------|
+| **Language** | Python |
+| **Libraries** | pandas · numpy · scikit-learn · streamlit |
+| **Visualization** | Power BI |
+| **Frontend (Full Stack)** | React · Vite · Bootstrap |
+| **Backend (Full Stack)** | Flask · Render |
+| **Deployment** | Streamlit · GitHub · Vercel |
 
-Destination
+---
 
-Destination Type
+## 📊 Data Collection
 
-Trip Duration
+**Dataset:** Open-source travel dataset with **22,342 records** and **11 features**  
 
-Budget
+**Features:**  
+`Package_ID`, `From_City`, `Destination`, `Destination_Type`, `Trip_Duration_Days`, `Budget`,  
+`Accommodation_Type`, `Transport_Mode`, `Activities_Count`, `Season`, `Package_Type`
 
-2️⃣ Feature Engineering:
+**Objective:**  
+Prepare structured, high-quality data for an ML-based recommender system.
 
-Categorical data → Encoded using OneHotEncoder
+---
 
-Numerical data → Normalized using MinMaxScaler
+## 🧹 Data Validation & Cleaning
 
-3️⃣ Model Training:
+✔ Checked column data types and unique values  
+✔ Removed duplicates and special characters  
+✔ Standardized categorical text (lowercase)  
+✔ Verified numeric ranges (duration, budget)  
+✔ Handled outliers in **Budget** using percentile capping (5th–95th)
 
-K-Nearest Neighbors (KNN) model trained using all travel packages.
+**Outcome:**  
+A clean, validated dataset ready for analysis and modeling.
 
-Uses Cosine Similarity metric to identify top 5 most similar packages.
+---
 
-4️⃣ Recommendations Display:
+## 🔍 Exploratory Data Analysis (EDA)
 
-Displays the top 5 recommended trips along with similarity scores in a Streamlit DataFrame.
+**Univariate Analysis**
 
-Each recommendation includes details like destination, duration, transport, and package type.
+- Numeric: `Budget`, `Trip_Duration_Days`, `Activities_Count`  
+- Categorical: `Destination_Type`, `Package_Type`, `Season`
 
-🧩 Example Screenshot
+**Bivariate Analysis**
 
-![App Screenshot](https://i.postimg.cc/bJFn0Dpt/Screenshot-2025-11-03-153510.png)
+- `Trip_Duration_Days vs Budget` → Longer trips → higher cost  
+- `Destination_Type vs Season` → Beaches popular in winter, hills in summer  
+- `Budget vs Package_Type` → Luxury > Premium > Standard  
 
-🛠️ Future Enhancements
+Visualizations created using **Matplotlib**, **Seaborn**, and **Plotly**.
 
-🚗 Integrate Google Maps API to show trip locations visually.
+---
 
-⭐ Add user reviews and ratings for each package.
+## 💡 Key Insights
 
-🧮 Implement Deep Learning–based recommendations (e.g., neural collaborative filtering).
+🌴 **Most Popular Destinations:** Goa, Delhi, Jaipur  
+💰 **Average Trip Cost:** ₹ 49 K  
+🕒 **Common Duration:** 4–6 days  
+❄️ **Highest Bookings:** Winter Season  
+🏨 **High Spenders:** Luxury Packages  
 
-🎯 Introduce advanced filters — by season, activity type, or budget range.
+---
 
-📊 Add data visualization dashboards for user insights.
+## 📈 Power BI Dashboard
 
-🤝 Contributing
+Interactive dashboard built to visualize insights such as:
 
-Contributions are welcome! 🙌
-To contribute:
+- Destination popularity  
+- Budget vs Duration trends  
+- Season-wise booking distribution  
+- Package-type spending  
 
-Fork this repository
+**Dashboard Preview:**  
+![Power BI Dashboard](Screenshot%202025-11-02%20143153.png)
 
-Create a new branch — feature/your-feature-name
+---
 
-Commit your changes
+## 🧠 Data Preprocessing & Feature Engineering
 
-Push to your fork
+- **Categorical Encoding:** OneHotEncoder  
+- **Numeric Scaling:** MinMaxScaler  
+- **Feature Selection:**  
+  `Destination_Type`, `Trip_Duration_Days`, `Budget`, `Accommodation_Type`, `Transport_Mode`, `Season`, `Package_Type`
+- **Weight Assignment:**  
+  `Destination_Type (0.4)`, `Budget (0.25)`, `Duration (0.2)`, others (0.15)`  
 
-Open a Pull Request
+---
 
-📄 License
+## 🤖 Model Development – Cosine Similarity
 
-This project is licensed under the MIT License —
-You are free to use, modify, and distribute it with attribution.
+**Algorithm:** K-Nearest Neighbors (KNN) with Cosine Similarity  
 
-👨‍💻 Author
+**Process:**
 
- Ganesh Sura 
- [email:ganesh2800139@gmail.com] 
- [ GitHub:https://github.com/ganesh2800139-creator]
+1️⃣ Convert user input → feature vector  
+2️⃣ Compute cosine similarity with all records  
+3️⃣ Retrieve Top 5 packages with highest similarity  
+```python
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
+from sklearn.metrics.pairwise import cosine_similarity
+import pandas as pd
+def recommend_packages(from_city, destination, destination_type, duration, budget, top_n=5):
+user_df = pd.DataFrame({
+        'From_City': [from_city],
+        'Destination': [destination],
+        'Destination_Type': [destination_type],
+        'Trip_Duration_Days': [duration],
+        'Budget': [budget]
+    })
+    # preprocess → encode → scale → compute similarity
+    similarity = cosine_similarity(user_vector, dataset_vectors)
+    top_indices = similarity[0].argsort()[-top_n:][::-1]
+    return df.iloc[top_indices][['Destination','Package_Type','Budget','Trip_Duration_Days']]
+```
+## ⚙️ Real-Time Implementation
+
+Deployed via **Streamlit**, allowing users to:
+
+1️⃣ Select preferences (**From City**, **Destination**, **Type**, **Duration**, **Budget**)  
+2️⃣ Get **Top 5 Recommended Packages** with Similarity Scores  
+3️⃣ View details like **Accommodation**, **Season**, **Transport Mode**
+
+---
+
+## 🌐 Streamlit & Git Integration
+
+🌍 **Live Streamlit App:**  
+🔗 [https://travel-tgxss3l8boweq5cxf8tmdy.streamlit.app/](https://travel-tgxss3l8boweq5cxf8tmdy.streamlit.app/)
+
+💾 **Version Control:**  
+Code and model hosted on **GitHub** for collaboration and version management.  
+Backend (**Flask**) deployed on **Render**, Frontend (**React**) on **Vercel**.  
+CI/CD pipelines ensure smooth, automated deployment.
+
+---
+
+## 🧭 Full Stack (Frontend + Backend)
+
+## 📌 Overview
+
+The **Travel Package Recommendation System** is a full-stack web application designed to provide **personalized travel package recommendations** based on user-selected preferences such as **departure city, destination city, budget, duration and destination type**.  
+
+The frontend is built using **React (Vite)** for a fast, responsive, and modular interface, while the backend uses **Flask** to fetch the top 5 recommended travel packages generated by the Machine Learning model developed by the Data Science team.  
+
+Deployment is handled using **Vercel (for frontend)** and **Render (for backend)** for seamless cloud hosting and public accessibility.
+
+---
+
+## 🚀 Features
+
+✅ **Interactive UI** – Modern and responsive frontend built with React and Bootstrap CSS.  
+✅ **Dynamic Travel Recommendations** – Fetches the top 5 relevant packages from the Flask backend API.  
+✅ **Search and Filter** – Users can select destination, type, or city to get tailored recommendations.  
+✅ **Favorites Management** – Add or remove favorite destinations for quick access.   
+✅ **Authentication System** – Includes Google authentication functionality.  
+✅ **Protected Routes** – Restricts access to certain pages based on authentication state.  
+✅ **Firebase Integration** – Handles secure user authentication and account management.  
+✅ **Responsive Layout** – Works seamlessly on desktop and mobile devices.  
+
+---
+
+## 🏗️ Tech Stack
+
+| Component | Description |
+|------------|-------------|
+| **Frontend Framework** | React (Vite) |
+| **Styling** | CSS3, Bootstrap Antd |
+| **Routing** | React Router DOM |
+| **Backend Framework** | Flask (Python) |
+| **Database / Authentication** | Firebase |
+| **APIs Used** | Flask API (for recommendations) |
+| **Deployment** | Frontend – Vercel<br>Backend – Render |
+| **Version Control** | Git and GitHub |
+
+---
+
+## 🧩 Folder Structure
+
+## 💡 Modules Overview
+
+### 🧭 **Home Module**
+- Displays introduction and search interface.
+
+### 🧭 **Destination Module**
+- Users select **From City**, **Destination**.
+
+### 🧳 **Packages Module**
+- user select **Budget** **Duration** **Type** (derived from `packageData.js` to fetch recommendations
+- Displays travel packages dynamically from backend data.
+- Allows filtering and saving favorites.
+
+### ❤️ **Favorites Module**
+- Stores user-selected favorite destinations.
+- Data persists locally for quick access.
+
+
+---
+
+## 🔄 Backend API (Flask)
+
+The Flask backend exposes endpoints for:
+- `/recommend` – Returns top 5 travel packages based on user’s selected destination and type.  
+- Communicates with the ML model built using **KNN (Cosine Similarity)** by the Data Science team.
+
+---
+
+## ⚙️ Deployment
+
+- **Frontend** → Hosted on **Vercel**  
+  - Runs React (Vite) app for users.  
+  - Fetches recommendation data from the Flask backend API hosted on Render.
+
+- **Backend** → Hosted on **Render**  
+  - Flask server runs the ML recommendation logic.  
+  - Exposes REST API endpoints consumed by the frontend.
+
+---
+
+## 🧠 How It Works (End-to-End)
+
+1️⃣ User selects **departure city**, **destination**, **Bufget**, **Duration** and **destination type** from the frontend.  
+2️⃣ These details are sent to the Flask backend via API request.  
+3️⃣ Backend applies **KNN (Cosine Similarity)** model to find the most relevant 5 packages.  
+4️⃣ The frontend displays these recommendations dynamically.  
+5️⃣ Users can mark favorites, view details of destinations.  
+
+---
+
+## 🧩 Environment Setup
+
+### 🔹 Frontend (.env)
+
+
+### 🔹 Backend (Render)
+- Add your model and dataset to Flask.
+- Ensure CORS is enabled to communicate with frontend hosted on Vercel.
+
+### 🧱 Frontend (Vite React)
+```bash
+cd frontend
+npm install
+npm run dev
+
+cd backend
+pip install -r requirements.txt
+python app.py
+```
+
+---
+
+## 🚀 Future Enhancements
+
+🚗 Integrate Google Maps API to display trip locations  
+⭐ Add user ratings and reviews  
+🧮 Adopt Deep Learning (Collaborative Filtering)  
+🎯 Add advanced filters by season or budget range  
+📊 Extend Power BI dashboard for real-time analytics  
+
+---
+
+---
+
+## 👥 Contributors
+
+| Role | Members |
+|------|----------|
+| **Data Science Team** | Anitha Sirigireddy · Naveen Kumar Reddy Bapathi · Ganesh Sura |
+| **Full Stack Team** | Shreyas Kandekar · Rajoli Srinivas · Malli Prudhvi |
+
+---
+
+> 💡 *“Marghadharshi – Your AI Guide for Smart Travel Decisions.”*
 
